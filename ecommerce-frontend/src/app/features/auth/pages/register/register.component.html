@@ -1,0 +1,167 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <!-- Header -->
+    <div class="text-center">
+      <div class="flex justify-center">
+        <div class="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-user-plus text-white text-xl"></i>
+        </div>
+      </div>
+      <h2 class="mt-6 text-3xl font-bold text-gray-900">Crear Cuenta</h2>
+      <p class="mt-2 text-sm text-gray-600">
+        ¿Ya tienes cuenta?
+        <a routerLink="/auth/login" class="font-medium text-primary-600 hover:text-primary-500">
+          Inicia sesión aquí
+        </a>
+      </p>
+    </div>
+
+    <!-- Form -->
+    <form class="mt-8 space-y-6" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="space-y-4">
+        <!-- Display Name -->
+        <div>
+          <label for="displayName" class="block text-sm font-medium text-gray-700 mb-1">
+            Nombre completo
+          </label>
+          <div class="relative">
+            <input
+              id="displayName"
+              name="displayName"
+              type="text"
+              autocomplete="name"
+              formControlName="displayName"
+              class="input-field"
+              [class.border-red-500]="hasFieldError('displayName')"
+              placeholder="Tu nombre completo"
+            >
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="pi pi-user text-gray-400"></i>
+            </div>
+          </div>
+          <p *ngIf="hasFieldError('displayName')" class="mt-1 text-sm text-red-600">
+            {{ getFieldError('displayName') }}
+          </p>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <div class="relative">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              formControlName="email"
+              class="input-field"
+              [class.border-red-500]="hasFieldError('email')"
+              placeholder="tu@email.com"
+            >
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="pi pi-envelope text-gray-400"></i>
+            </div>
+          </div>
+          <p *ngIf="hasFieldError('email')" class="mt-1 text-sm text-red-600">
+            {{ getFieldError('email') }}
+          </p>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+            Contraseña
+          </label>
+          <div class="relative">
+            <input
+              id="password"
+              name="password"
+              [type]="showPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              formControlName="password"
+              class="input-field pr-10"
+              [class.border-red-500]="hasFieldError('password')"
+              placeholder="Mínimo 6 caracteres"
+            >
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="pi pi-lock text-gray-400"></i>
+            </div>
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center"
+            >
+              <i 
+                [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                class="text-gray-400 hover:text-gray-600"
+              ></i>
+            </button>
+          </div>
+          <p *ngIf="hasFieldError('password')" class="mt-1 text-sm text-red-600">
+            {{ getFieldError('password') }}
+          </p>
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">
+            Confirmar contraseña
+          </label>
+          <div class="relative">
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              formControlName="confirmPassword"
+              class="input-field pr-10"
+              [class.border-red-500]="hasFieldError('confirmPassword')"
+              placeholder="Repite tu contraseña"
+            >
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="pi pi-lock text-gray-400"></i>
+            </div>
+            <button
+              type="button"
+              (click)="toggleConfirmPasswordVisibility()"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center"
+            >
+              <i 
+                [class]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                class="text-gray-400 hover:text-gray-600"
+              ></i>
+            </button>
+          </div>
+          <p *ngIf="hasFieldError('confirmPassword')" class="mt-1 text-sm text-red-600">
+            {{ getFieldError('confirmPassword') }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Terms -->
+      <div class="text-sm text-gray-600">
+        Al crear una cuenta, aceptas nuestros
+        <a href="#" class="text-primary-600 hover:text-primary-500">Términos de Servicio</a>
+        y
+        <a href="#" class="text-primary-600 hover:text-primary-500">Política de Privacidad</a>
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button
+          type="submit"
+          [disabled]="loading$ | async"
+          class="w-full btn-primary py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span *ngIf="!(loading$ | async)">Crear Cuenta</span>
+          <span *ngIf="loading$ | async" class="flex items-center justify-center">
+            <div class="loading-spinner w-4 h-4 mr-2"></div>
+            Creando cuenta...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

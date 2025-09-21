@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "../docs/ER-Diagram.svg"
+  theme    = "forest"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:password@localhost:5432/ecommerce_db"
+}
+
+// Modelo de Usuario
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  address   String?
+  role      UserRole @default(CUSTOMER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  cart Cart?
+  orders Order[]
+
+  @@map("users")
+}
+
+// Modelo de Categoría
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relaciones
+  products Product[]
+
+  @@map("categories")
+}
+
+// Modelo de Producto
+model Product {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  price       Float
+  discountPercentage Float @default(0)
+  rating      Float    @default(0)
+  stock       Int      @default(0)
+  brand       String?
+  sku         String?  @unique
+  weight      Float?
+  dimensions  Json?
+  warrantyInformation String?
+  shippingInformation String?
+  availabilityStatus String @default("In Stock")
+  reviews     Json?
+  returnPolicy String?
+  minimumOrderQuantity Int @default(1)
+  images      String[]
+  thumbnail   String?
+  tags        String[]
+  
+  // Campos para sincronización con DummyJSON
+  externalId  Int?     @unique // ID del producto en DummyJSON
+  lastSyncAt  DateTime?
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+
+  @@map("products")
+}
+
+// Modelo de Carrito
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  items CartItem[]
+
+  @@map("carts")
+}
+
+// Modelo de Item del Carrito
+model CartItem {
+  id        String   @id @default(cuid())
+  quantity  Int      @default(1)
+  price     Float    // Precio al momento de agregar al carrito
+  
+  // Relaciones
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId]) // Un producto solo puede estar una vez por carrito
+  @@map("cart_items")
+}
+
+// Modelo de Orden
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique
+  status      OrderStatus @default(PENDING)
+  totalAmount Float
+  
+  // Información de envío
+  shippingAddress Json
+  billingAddress  Json?
+  
+  // Relaciones
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+// Modelo de Item de Orden
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Float   // Precio al momento de la compra
+  
+  // Relaciones
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  createdAt DateTime @default(now())
+
+  @@map("order_items")
+}
+
+// Modelo para logs del sistema
+model SystemLog {
+  id        String    @id @default(cuid())
+  level     LogLevel
+  message   String
+  context   String?
+  metadata  Json?
+  userId    String?
+  createdAt DateTime  @default(now())
+
+  @@map("system_logs")
+}
+
+// Enums
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum LogLevel {
+  ERROR
+  WARN
+  INFO
+  DEBUG
+}

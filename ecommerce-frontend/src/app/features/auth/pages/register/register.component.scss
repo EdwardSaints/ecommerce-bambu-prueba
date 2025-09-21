@@ -1,0 +1,8 @@
+// Estilos específicos del componente de registro
+.input-field {
+  padding-left: 2.5rem;
+}
+
+.input-field:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}

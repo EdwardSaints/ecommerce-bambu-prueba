@@ -1,0 +1,153 @@
+<!-- Página de Inicio Simple -->
+<div class="min-h-screen">
+  <!-- Hero Section -->
+  <section style="background: linear-gradient(to right, #2563eb, #1d4ed8); color: white; padding: 80px 0;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; text-align: center;">
+      <h1 style="font-size: 3rem; font-weight: bold; margin-bottom: 24px;">
+        Bienvenido a tu <span style="color: #bfdbfe;">eCommerce</span>
+      </h1>
+      <p style="font-size: 1.25rem; margin-bottom: 32px;">
+        Descubre miles de productos de calidad con los mejores precios
+      </p>
+      <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a routerLink="/products" style="background: white; color: #2563eb; padding: 12px 32px; border-radius: 8px; font-weight: 600; text-decoration: none;">
+          Ver Productos
+        </a>
+        <a routerLink="/auth/register" style="border: 2px solid white; color: white; padding: 12px 32px; border-radius: 8px; font-weight: 600; text-decoration: none;">
+          Crear Cuenta
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Productos Destacados -->
+  <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Productos Destacados</h2>
+        <p class="text-lg text-gray-600">Explora nuestra selección de productos populares</p>
+      </div>
+
+          <!-- Loading State -->
+          <div *ngIf="loading$ | async" class="flex justify-center items-center py-12">
+            <div class="text-center">
+              <div class="loading-spinner w-8 h-8 mx-auto mb-4"></div>
+              <p class="text-gray-600">Cargando productos destacados...</p>
+            </div>
+          </div>
+
+          <!-- Grid de Productos -->
+          <div *ngIf="!(loading$ | async)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div 
+              *ngFor="let product of featuredProducts$ | async" 
+              class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+            >
+              <!-- Imagen del producto -->
+              <div class="relative">
+                <img 
+                  [src]="product.thumbnail" 
+                  [alt]="product.title" 
+                  class="w-full h-48 object-cover"
+                  loading="lazy"
+                >
+                <!-- Badge de descuento -->
+                <div 
+                  *ngIf="product.discountPercentage > 0"
+                  class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded"
+                >
+                  -{{ product.discountPercentage }}%
+                </div>
+              </div>
+
+              <!-- Contenido -->
+              <div class="p-4">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">{{ product.category }}</p>
+                <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">{{ product.title }}</h3>
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ product.description }}</p>
+                
+                <!-- Precio -->
+                <div class="flex justify-between items-center mb-3">
+                  <div class="flex items-center space-x-2">
+                    <span 
+                      *ngIf="product.discountPercentage > 0"
+                      class="text-lg font-bold text-blue-600"
+                    >
+                      {{ formatPrice(getDiscountedPrice(product.price, product.discountPercentage)) }}
+                    </span>
+                    <span 
+                      [class]="product.discountPercentage > 0 ? 'text-sm text-gray-500 line-through' : 'text-lg font-bold text-blue-600'"
+                    >
+                      {{ formatPrice(product.price) }}
+                    </span>
+                  </div>
+                  <div class="flex items-center text-sm text-gray-500">
+                    <i class="pi pi-star-fill text-yellow-400 mr-1"></i>
+                    {{ product.rating }}
+                  </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="flex gap-2">
+                  <button
+                    [routerLink]="['/products', product.id]"
+                    class="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                  >
+                    Ver Detalle
+                  </button>
+                  <button
+                    [disabled]="product.stock === 0"
+                    class="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                  >
+                    <i class="pi pi-shopping-cart mr-1"></i>
+                    Agregar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+      <!-- Botón Ver Más -->
+      <div class="text-center mt-12">
+        <a routerLink="/products" class="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-semibold hover:bg-gray-300">
+          Ver Todos los Productos
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Características -->
+  <section class="py-16 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">¿Por qué elegirnos?</h2>
+        <p class="text-lg text-gray-600">Ofrecemos la mejor experiencia de compra online</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-blue-600 text-2xl">🚚</span>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Envío Rápido</h3>
+          <p class="text-gray-600">Entrega en 24-48 horas en toda la ciudad</p>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-blue-600 text-2xl">🛡️</span>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Compra Segura</h3>
+          <p class="text-gray-600">Tus datos y pagos están completamente protegidos</p>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-blue-600 text-2xl">❤️</span>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Garantía Total</h3>
+          <p class="text-gray-600">30 días para devoluciones sin preguntas</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

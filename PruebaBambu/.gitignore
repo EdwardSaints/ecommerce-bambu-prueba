@@ -1,0 +1,38 @@
+# ===== PROYECTO ECOMMERCE BAMBU =====
+
+# ===== BACKEND (Node.js/NestJS) =====
+ecommerce-backend/node_modules/
+ecommerce-backend/dist/
+ecommerce-backend/.env
+ecommerce-backend/.env.local
+ecommerce-backend/.env.production
+ecommerce-backend/logs/
+ecommerce-backend/coverage/
+ecommerce-backend/.nyc_output/
+ecommerce-backend/prisma/migrations/
+ecommerce-backend/prisma/dev.db*
+
+# ===== FRONTEND (Angular) =====
+ecommerce-frontend/node_modules/
+ecommerce-frontend/dist/
+ecommerce-frontend/.angular/
+ecommerce-frontend/coverage/
+ecommerce-frontend/.nyc_output/
+
+# ===== ARCHIVOS DEL SISTEMA =====
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.temp
+
+# ===== IDEs =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== OTROS =====
+*.zip
+*.rar
+*.7z

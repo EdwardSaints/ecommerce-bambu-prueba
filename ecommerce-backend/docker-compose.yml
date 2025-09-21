@@ -1,0 +1,159 @@
+version: '3.8'
+
+services:
+  # ================================
+  # Base de Datos PostgreSQL
+  # ================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: ecommerce-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ecommerce_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-ecommerce_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ================================
+  # Aplicación NestJS
+  # ================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: ecommerce-app
+    restart: unless-stopped
+    environment:
+      # Base de datos
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-ecommerce_db}
+      
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-tu-jwt-secret-super-seguro-para-produccion}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      
+      # Servidor
+      PORT: ${APP_PORT:-3000}
+      NODE_ENV: ${NODE_ENV:-production}
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_DIR: ${LOG_DIR:-./logs}
+      
+      # Rate Limiting
+      THROTTLE_TTL: ${THROTTLE_TTL:-60}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-10}
+      
+      # Cron Jobs
+      SYNC_PRODUCTS_CRON: ${SYNC_PRODUCTS_CRON:-"0 */12 * * *"}
+      
+      # API Externa
+      DUMMYJSON_API_URL: ${DUMMYJSON_API_URL:-https://dummyjson.com}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      - app_logs:/app/logs
+    networks:
+      - ecommerce-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: >
+      sh -c "
+        echo 'Esperando a que PostgreSQL esté listo...' &&
+        npx prisma migrate deploy &&
+        npx prisma generate &&
+        echo 'Iniciando aplicación...' &&
+        node dist/main.js
+      "
+
+  # ================================
+  # Redis (Opcional - para caché)
+  # ================================
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+
+  # ================================
+  # Nginx (Reverse Proxy)
+  # ================================
+  nginx:
+    image: nginx:alpine
+    container_name: ecommerce-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - ecommerce-network
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# ================================
+# Volúmenes Persistentes
+# ================================
+volumes:
+  postgres_data:
+    driver: local
+    name: ecommerce_postgres_data
+  
+  redis_data:
+    driver: local
+    name: ecommerce_redis_data
+  
+  app_logs:
+    driver: local
+    name: ecommerce_app_logs
+  
+  nginx_logs:
+    driver: local
+    name: ecommerce_nginx_logs
+
+# ================================
+# Redes
+# ================================
+networks:
+  ecommerce-network:
+    driver: bridge
+    name: ecommerce_network

@@ -1,0 +1,55 @@
+# Dependencias
+node_modules
+npm-debug.log*
+
+# Archivos de desarrollo
+.env.local
+.env.development
+.env.test
+
+# Archivos de compilación
+dist
+build
+
+# Logs
+logs
+*.log
+
+# Archivos temporales
+.tmp
+.temp
+
+# Archivos de IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentación
+README.md
+docs/
+
+# Tests
+test/
+coverage/
+.nyc_output
+
+# Prisma (excepto schema)
+prisma/migrations/
+prisma/dev.db*
+
+# Archivos de configuración local
+.env.example
