@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reglas para usuarios - solo pueden acceder a sus propios datos
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Reglas para carritos - solo el propietario puede acceder
+    match /carts/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Reglas para productos - solo lectura para usuarios autenticados
+    match /products/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // Solo administradores (implementar en futuro)
+    }
+    
+    // Reglas para categorías - solo lectura para usuarios autenticados
+    match /categories/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // Solo administradores (implementar en futuro)
+    }
+    
+    // Reglas para órdenes - solo el propietario puede acceder
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+    }
+    
+    // Reglas para wishlist - solo el propietario puede acceder
+    match /wishlists/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Función helper para verificar si el usuario es administrador
+    function isAdmin() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // Reglas para administradores (futuro)
+    match /admin/{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

@@ -1,23 +1,15 @@
+import { Product } from './product.interface';
+
 export interface CartItem {
-  id: string;
-  productId: number;
-  title: string;
-  price: number;
+  product: Product;
   quantity: number;
-  thumbnail: string;
-  stock: number;
-  category: string;
-  brand: string;
+  addedAt: Date;
 }
 
 export interface Cart {
-  id?: string;
-  userId: string;
   items: CartItem[];
-  totalItems: number;
-  totalAmount: number;
-  createdAt?: Date;
-  updatedAt?: Date;
+  total: number;
+  itemCount: number;
 }
 
 export interface CartState {

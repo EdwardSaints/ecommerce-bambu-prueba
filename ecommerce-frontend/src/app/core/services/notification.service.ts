@@ -76,7 +76,7 @@ export class NotificationService {
     });
   }
 
-  showWarn(title: string, message: string, duration?: number): void {
+  showWarn(message: string, title?: string, duration?: number): void {
     this.addNotification({
       type: 'warning',
       title,

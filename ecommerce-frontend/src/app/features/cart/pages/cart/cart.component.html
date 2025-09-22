@@ -1,0 +1,223 @@
+<!-- Shopping Cart Page -->
+<div class="container mx-auto px-4 py-4 sm:py-8">
+  <!-- Header -->
+  <div class="mb-6 sm:mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Carrito de Compras</h1>
+    <nav class="text-sm">
+      <ol class="flex items-center space-x-2">
+        <li><a routerLink="/" class="text-blue-500 hover:text-blue-600">Inicio</a></li>
+        <li><i class="pi pi-chevron-right text-gray-400 text-xs"></i></li>
+        <li class="text-gray-600">Carrito</li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+  </div>
+
+  <!-- Cart Content -->
+  <div *ngIf="!loading" class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+    <!-- Cart Items -->
+    <div class="lg:col-span-2">
+      <!-- Empty Cart -->
+      <div *ngIf="cartItems.length === 0" class="text-center py-8 sm:py-12 bg-white rounded-lg shadow-md">
+        <i class="pi pi-shopping-cart text-4xl sm:text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-600 mb-2">Tu carrito está vacío</h3>
+        <p class="text-gray-500 mb-4 sm:mb-6 px-4">¡Agrega algunos productos para comenzar!</p>
+        <button
+          routerLink="/products"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors text-sm sm:text-base"
+        >
+          Explorar productos
+        </button>
+      </div>
+
+      <!-- Cart Items List -->
+      <div *ngIf="cartItems.length > 0" class="space-y-3 sm:space-y-4">
+        <div *ngFor="let item of cartItems; trackBy: trackByProductId" 
+             class="bg-white rounded-lg shadow-md p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+          
+          <!-- Product Image -->
+          <div class="flex-shrink-0">
+            <img
+              [src]="item.product.thumbnail"
+              [alt]="item.product.title"
+              class="w-20 h-20 object-cover rounded-lg"
+              (error)="onImageError($event)"
+            />
+          </div>
+
+          <!-- Product Info -->
+          <div class="flex-1 min-w-0">
+            <h3 class="text-lg font-semibold text-gray-800 truncate">
+              <a [routerLink]="['/products', item.product.id]" class="hover:text-blue-600">
+                {{ item.product.title }}
+              </a>
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">{{ item.product.category }}</p>
+            <div class="flex items-center mt-2">
+              <span class="text-lg font-bold text-green-600">${{ item.product.price }}</span>
+              <span *ngIf="item.product.discountPercentage > 0" class="text-sm text-gray-500 line-through ml-2">
+                ${{ getOriginalPrice(item.product) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Quantity Controls -->
+          <div class="flex items-center space-x-3">
+            <div class="flex items-center border border-gray-300 rounded-lg">
+              <button
+                (click)="updateQuantity(item.product.id, item.quantity - 1)"
+                [disabled]="item.quantity <= 1 || updatingItems.has(item.product.id)"
+                class="px-3 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i class="pi pi-minus"></i>
+              </button>
+              <span class="px-4 py-2 text-center min-w-[3rem]">
+                <span *ngIf="!updatingItems.has(item.product.id)">{{ item.quantity }}</span>
+                <div *ngIf="updatingItems.has(item.product.id)" class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mx-auto"></div>
+              </span>
+              <button
+                (click)="updateQuantity(item.product.id, item.quantity + 1)"
+                [disabled]="item.quantity >= item.product.stock || updatingItems.has(item.product.id)"
+                class="px-3 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Item Total -->
+          <div class="text-right">
+            <div class="text-lg font-bold text-gray-800">
+              ${{ getItemTotal(item) }}
+            </div>
+            <button
+              (click)="removeFromCart(item.product.id)"
+              [disabled]="removingItems.has(item.product.id)"
+              class="text-red-500 hover:text-red-600 text-sm mt-1 disabled:opacity-50"
+            >
+              <i *ngIf="!removingItems.has(item.product.id)" class="pi pi-trash mr-1"></i>
+              <div *ngIf="removingItems.has(item.product.id)" class="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-red-500 mr-1"></div>
+              {{ removingItems.has(item.product.id) ? 'Eliminando...' : 'Eliminar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div *ngIf="cartItems.length > 0" class="lg:col-span-1">
+      <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Resumen del pedido</h3>
+        
+        <!-- Summary Details -->
+        <div class="space-y-3 mb-6">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Subtotal ({{ getTotalItems() }} artículos)</span>
+            <span class="font-medium">${{ getSubtotal() }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Descuentos</span>
+            <span class="font-medium text-green-600">-${{ getTotalDiscount() }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Envío</span>
+            <span class="font-medium">
+              <span *ngIf="getSubtotal() >= 50; else shippingCost">Gratis</span>
+              <ng-template #shippingCost>$5.99</ng-template>
+            </span>
+          </div>
+          <div class="border-t pt-3">
+            <div class="flex justify-between">
+              <span class="text-lg font-semibold text-gray-800">Total</span>
+              <span class="text-lg font-bold text-green-600">${{ getTotal() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Free Shipping Progress -->
+        <div *ngIf="getSubtotal() < 50" class="mb-6">
+          <div class="text-sm text-gray-600 mb-2">
+            Agrega ${{ (50 - getSubtotal()).toFixed(2) }} más para envío gratis
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              class="bg-green-500 h-2 rounded-full transition-all duration-300"
+              [style.width.%]="(getSubtotal() / 50) * 100"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-3">
+          <button
+            (click)="proceedToCheckout()"
+            [disabled]="processingCheckout"
+            class="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
+          >
+            <i *ngIf="!processingCheckout" class="pi pi-credit-card mr-2"></i>
+            <div *ngIf="processingCheckout" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            {{ processingCheckout ? 'Procesando...' : 'Proceder al pago' }}
+          </button>
+          
+          <button
+            routerLink="/products"
+            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Continuar comprando
+          </button>
+          
+          <button
+            (click)="clearCart()"
+            [disabled]="clearingCart || cartItems.length === 0"
+            class="w-full text-red-500 hover:text-red-600 disabled:opacity-50 text-sm py-2"
+          >
+            <i *ngIf="!clearingCart" class="pi pi-trash mr-1"></i>
+            <div *ngIf="clearingCart" class="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-red-500 mr-1"></div>
+            {{ clearingCart ? 'Limpiando...' : 'Vaciar carrito' }}
+          </button>
+        </div>
+
+        <!-- Security Info -->
+        <div class="mt-6 pt-4 border-t border-gray-200">
+          <div class="flex items-center text-sm text-gray-600 mb-2">
+            <i class="pi pi-shield mr-2 text-green-500"></i>
+            <span>Compra 100% segura</span>
+          </div>
+          <div class="flex items-center text-sm text-gray-600">
+            <i class="pi pi-truck mr-2 text-blue-500"></i>
+            <span>Envío en 2-3 días hábiles</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recently Viewed Products -->
+  <div *ngIf="recentlyViewed.length > 0" class="mt-12">
+    <h3 class="text-xl font-semibold text-gray-800 mb-6">Productos vistos recientemente</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div *ngFor="let product of recentlyViewed" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+        <img
+          [src]="product.thumbnail"
+          [alt]="product.title"
+          class="w-full h-32 object-cover"
+          (error)="onImageError($event)"
+        />
+        <div class="p-3">
+          <h4 class="font-medium text-sm text-gray-800 truncate">{{ product.title }}</h4>
+          <p class="text-green-600 font-bold text-sm mt-1">${{ product.price }}</p>
+          <button
+            (click)="addToCartFromRecent(product)"
+            class="w-full mt-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+          >
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

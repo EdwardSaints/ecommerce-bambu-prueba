@@ -1,204 +1,158 @@
-<!-- Página de Productos -->
-<div class="min-h-screen bg-gray-50">
-  <div class="max-w-7xl mx-auto px-4 py-8">
+<!-- Products List Page -->
+<div class="container mx-auto px-4 py-4 sm:py-8">
+  <!-- Header -->
+  <div class="mb-6 sm:mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">Productos</h1>
     
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-4">Catálogo de Productos</h1>
-      
-      <!-- Barra de búsqueda -->
-      <div class="flex flex-col sm:flex-row gap-4 items-center">
-        <div class="flex-1 relative">
+    <!-- Search and Filters -->
+    <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Search -->
+        <div class="sm:col-span-2 lg:col-span-2">
+          <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+            Buscar productos
+          </label>
           <input
             type="text"
-            [(ngModel)]="searchQuery"
-            (keyup.enter)="onSearch()"
-            placeholder="Buscar productos..."
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-          <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            id="search"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Buscar por nombre..."
+            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+          />
         </div>
         
-        <div class="flex gap-2">
-          <button
-            (click)="onSearch()"
-            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        <!-- Category Filter -->
+        <div class="sm:col-span-2 lg:col-span-1">
+          <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+            Categoría
+          </label>
+          <select
+            id="category"
+            [(ngModel)]="selectedCategory"
+            (change)="onCategoryChange()"
+            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
           >
-            <i class="pi pi-search mr-2"></i>Buscar
-          </button>
-          
-          <button
-            *ngIf="searchQuery"
-            (click)="onClearSearch()"
-            class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            <i class="pi pi-times"></i>
-          </button>
+            <option value="">Todas las categorías</option>
+            <option *ngFor="let category of categories" [value]="category.slug">
+              {{ category.name }}
+            </option>
+          </select>
         </div>
       </div>
-    </div>
-
-    <!-- Estadísticas -->
-    <div class="mb-6 text-sm text-gray-600">
-      <span *ngIf="total$ | async as total">
-        Mostrando {{ (products$ | async)?.length || 0 }} de {{ total }} productos
-        <span *ngIf="searchQuery" class="font-medium">para "{{ searchQuery }}"</span>
-      </span>
-    </div>
-
-    <!-- Loading State -->
-    <div *ngIf="loading$ | async" class="flex justify-center items-center py-12">
-      <div class="text-center">
-        <div class="loading-spinner w-8 h-8 mx-auto mb-4"></div>
-        <p class="text-gray-600">Cargando productos...</p>
-      </div>
-    </div>
-
-    <!-- Error State -->
-    <div *ngIf="error$ | async as error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-      <div class="flex items-center">
-        <i class="pi pi-exclamation-triangle text-red-500 mr-2"></i>
-        <span class="text-red-700">{{ error }}</span>
-        <button 
-          (click)="loadProducts(true)"
-          class="ml-auto text-red-600 hover:text-red-800 underline"
+      
+      <!-- Sort Options -->
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button
+          *ngFor="let sort of sortOptions"
+          (click)="onSortChange(sort.value)"
+          [class]="'px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ' + 
+                   (currentSort === sort.value ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')"
         >
-          Reintentar
+          {{ sort.label }}
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- Grid de Productos -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-      <div 
-        *ngFor="let product of products$ | async; trackBy: trackByProductId"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200"
-      >
-        <!-- Imagen del producto -->
-        <div class="relative aspect-square overflow-hidden bg-gray-100">
-          <img 
-            [src]="product.thumbnail" 
-            [alt]="product.title"
-            class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-            loading="lazy"
-          >
-          
-          <!-- Badge de descuento -->
-          <div 
-            *ngIf="product.discountPercentage > 0"
-            class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded"
-          >
-            -{{ product.discountPercentage }}%
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+  </div>
+
+  <!-- Products Grid -->
+  <div *ngIf="!loading && products.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+    <div *ngFor="let product of products" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+      <!-- Product Image -->
+      <div class="relative">
+        <img
+          [src]="product.thumbnail"
+          [alt]="product.title"
+          class="w-full h-48 object-cover"
+          (error)="onImageError($event)"
+        />
+        <div *ngIf="product.discountPercentage > 0" class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">
+          -{{ product.discountPercentage }}%
+        </div>
+      </div>
+      
+      <!-- Product Info -->
+      <div class="p-4">
+        <h3 class="font-semibold text-lg text-gray-800 mb-2 line-clamp-2">{{ product.title }}</h3>
+        <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ product.description }}</p>
+        
+        <!-- Price -->
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <span class="text-2xl font-bold text-green-600">${{ product.price }}</span>
+            <span *ngIf="product.discountPercentage > 0" class="text-sm text-gray-500 line-through ml-2">
+              ${{ (product.price / (1 - product.discountPercentage / 100)).toFixed(2) }}
+            </span>
           </div>
-          
-          <!-- Rating -->
-          <div class="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded flex items-center">
-            <i class="pi pi-star-fill text-yellow-400 mr-1"></i>
-            {{ product.rating }}
+          <div class="flex items-center">
+            <i class="pi pi-star-fill text-yellow-400 text-sm mr-1"></i>
+            <span class="text-sm text-gray-600">{{ product.rating }}</span>
           </div>
         </div>
-
-        <!-- Contenido del producto -->
-        <div class="p-4">
-          <!-- Categoría -->
-          <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">{{ product.category }}</p>
-          
-          <!-- Título -->
-          <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">{{ product.title }}</h3>
-          
-          <!-- Descripción -->
-          <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ product.description }}</p>
-          
-          <!-- Precio -->
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center space-x-2">
-              <span 
-                *ngIf="product.discountPercentage > 0"
-                class="text-lg font-bold text-blue-600"
-              >
-                {{ formatPrice(getDiscountedPrice(product.price, product.discountPercentage)) }}
-              </span>
-              <span 
-                [class]="product.discountPercentage > 0 ? 'text-sm text-gray-500 line-through' : 'text-lg font-bold text-blue-600'"
-              >
-                {{ formatPrice(product.price) }}
-              </span>
-            </div>
-          </div>
-          
-          <!-- Stock -->
-          <div class="flex items-center justify-between mb-4">
-            <span 
-              [class]="product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600'"
-              class="text-xs font-medium"
-            >
-              <i class="pi pi-circle-fill mr-1"></i>
-              {{ product.stock > 0 ? 'Stock: ' + product.stock : 'Sin stock' }}
-            </span>
-            <span class="text-xs text-gray-500">{{ product.brand }}</span>
-          </div>
-          
-          <!-- Botones -->
-          <div class="flex gap-2">
-            <button
-              [routerLink]="['/products', product.id]"
-              class="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-            >
-              Ver Detalle
-            </button>
-            <button
-              [disabled]="product.stock === 0"
-              class="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-            >
-              <i class="pi pi-shopping-cart mr-1"></i>
-              Agregar
-            </button>
-          </div>
+        
+        <!-- Actions -->
+        <div class="flex gap-2">
+          <button
+            (click)="viewProduct(product.id)"
+            class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            Ver detalles
+          </button>
+          <button
+            (click)="addToCart(product)"
+            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            <i class="pi pi-shopping-cart"></i>
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Botón Cargar Más -->
-    <div 
-      *ngIf="(hasMore$ | async) && (products$ | async)?.length"
-      class="text-center"
-    >
+  <!-- Empty State -->
+  <div *ngIf="!loading && products.length === 0" class="text-center py-12">
+    <i class="pi pi-search text-6xl text-gray-300 mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-600 mb-2">No se encontraron productos</h3>
+    <p class="text-gray-500">Intenta con otros términos de búsqueda o filtros</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && products.length > 0 && totalPages > 1" class="flex justify-center mt-8">
+    <nav class="flex items-center space-x-2">
       <button
-        (click)="onLoadMore()"
-        [disabled]="loading$ | async"
-        class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+        (click)="goToPage(currentPage - 1)"
+        [disabled]="currentPage === 1"
+        class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 hover:bg-gray-200 text-gray-700"
       >
-        <span *ngIf="!(loading$ | async)">
-          <i class="pi pi-plus mr-2"></i>Cargar Más Productos
-        </span>
-        <span *ngIf="loading$ | async">
-          <div class="loading-spinner w-4 h-4 inline-block mr-2"></div>Cargando...
-        </span>
+        <i class="pi pi-chevron-left"></i>
       </button>
-    </div>
-
-    <!-- Estado vacío -->
-    <div 
-      *ngIf="!(loading$ | async) && !(error$ | async) && (products$ | async)?.length === 0"
-      class="text-center py-12"
-    >
-      <i class="pi pi-search text-6xl text-gray-300 mb-4"></i>
-      <h3 class="text-xl font-semibold text-gray-700 mb-2">No se encontraron productos</h3>
-      <p class="text-gray-500 mb-4">
-        <span *ngIf="searchQuery; else noProductsMessage">
-          No hay productos que coincidan con "{{ searchQuery }}"
-        </span>
-        <ng-template #noProductsMessage>
-          No hay productos disponibles en este momento
+      
+      <span *ngFor="let page of getPageNumbers()" class="inline-block">
+        <button
+          *ngIf="page !== '...'; else ellipsis"
+          (click)="goToPage(+page)"
+          [class]="'px-3 py-2 rounded-lg text-sm font-medium transition-colors ' + 
+                   (currentPage === page ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700')"
+        >
+          {{ page }}
+        </button>
+        <ng-template #ellipsis>
+          <span class="px-3 py-2 text-gray-500">...</span>
         </ng-template>
-      </p>
+      </span>
+      
       <button
-        *ngIf="searchQuery"
-        (click)="onClearSearch()"
-        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        (click)="goToPage(currentPage + 1)"
+        [disabled]="currentPage === totalPages"
+        class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 hover:bg-gray-200 text-gray-700"
       >
-        Ver Todos los Productos
+        <i class="pi pi-chevron-right"></i>
       </button>
-    </div>
+    </nav>
   </div>
 </div>

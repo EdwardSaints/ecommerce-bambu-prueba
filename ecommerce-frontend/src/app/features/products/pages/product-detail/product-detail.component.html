@@ -1,0 +1,210 @@
+<!-- Product Detail Page -->
+<div class="container mx-auto px-4 py-4 sm:py-8">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+  </div>
+
+  <!-- Product Detail -->
+  <div *ngIf="!loading && product" class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <!-- Breadcrumb -->
+    <nav class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+      <ol class="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm overflow-x-auto">
+        <li><a routerLink="/" class="text-blue-500 hover:text-blue-600 whitespace-nowrap">Inicio</a></li>
+        <li><i class="pi pi-chevron-right text-gray-400 text-xs"></i></li>
+        <li><a routerLink="/products" class="text-blue-500 hover:text-blue-600 whitespace-nowrap">Productos</a></li>
+        <li><i class="pi pi-chevron-right text-gray-400 text-xs"></i></li>
+        <li class="text-gray-600 truncate max-w-[150px] sm:max-w-none">{{ product.title }}</li>
+      </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 p-4 sm:p-6">
+      <!-- Product Images -->
+      <div class="space-y-4">
+        <!-- Main Image -->
+        <div class="relative">
+          <img
+            [src]="selectedImage"
+            [alt]="product.title"
+            class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg"
+            (error)="onImageError($event)"
+          />
+          <div *ngIf="product.discountPercentage > 0" class="absolute top-2 sm:top-4 left-2 sm:left-4 bg-red-500 text-white px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-bold">
+            -{{ product.discountPercentage }}%
+          </div>
+        </div>
+        
+        <!-- Thumbnail Images -->
+        <div *ngIf="product.images && product.images.length > 1" class="flex space-x-2 overflow-x-auto pb-2">
+          <img
+            *ngFor="let image of product.images"
+            [src]="image"
+            [alt]="product.title"
+            (click)="selectImage(image)"
+            [class]="'w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg cursor-pointer border-2 transition-colors flex-shrink-0 ' + 
+                     (selectedImage === image ? 'border-blue-500' : 'border-gray-200 hover:border-gray-300')"
+            (error)="onImageError($event)"
+          />
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="space-y-4 sm:space-y-6">
+        <!-- Title and Rating -->
+        <div>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">{{ product.title }}</h1>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+            <div class="flex items-center">
+              <div class="flex">
+                <i *ngFor="let star of getStars(product.rating)" 
+                   [class]="'text-yellow-400 text-sm sm:text-base ' + (star ? 'pi pi-star-fill' : 'pi pi-star')"></i>
+              </div>
+              <span class="ml-2 text-sm text-gray-600">({{ product.rating }}/5)</span>
+            </div>
+            <span class="text-sm text-gray-500">Stock: {{ product.stock }}</span>
+          </div>
+        </div>
+
+        <!-- Price -->
+        <div class="space-y-2">
+          <div class="flex flex-col sm:flex-row sm:items-baseline sm:space-x-2">
+            <span class="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-600">${{ product.price }}</span>
+            <span *ngIf="product.discountPercentage > 0" class="text-lg sm:text-xl text-gray-500 line-through">
+              ${{ getOriginalPrice() }}
+            </span>
+          </div>
+          <p *ngIf="product.discountPercentage > 0" class="text-sm text-green-600 font-medium">
+            ¡Ahorras ${{ getSavings() }}!
+          </p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Descripción</h3>
+          <p class="text-gray-600 leading-relaxed">{{ product.description }}</p>
+        </div>
+
+        <!-- Product Details -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm">
+          <div class="flex flex-col sm:block">
+            <span class="font-medium text-gray-700">Categoría:</span>
+            <span class="sm:ml-2 text-gray-600 capitalize">{{ product.category }}</span>
+          </div>
+          <div class="flex flex-col sm:block">
+            <span class="font-medium text-gray-700">Marca:</span>
+            <span class="sm:ml-2 text-gray-600">{{ product.brand || 'N/A' }}</span>
+          </div>
+          <div class="flex flex-col sm:block">
+            <span class="font-medium text-gray-700">SKU:</span>
+            <span class="sm:ml-2 text-gray-600">{{ product.sku || 'N/A' }}</span>
+          </div>
+          <div class="flex flex-col sm:block">
+            <span class="font-medium text-gray-700">Disponibilidad:</span>
+            <span [class]="'sm:ml-2 font-medium ' + (product.stock > 0 ? 'text-green-600' : 'text-red-600')">
+              {{ product.stock > 0 ? 'En stock' : 'Agotado' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Quantity and Add to Cart -->
+        <div class="space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <label class="font-medium text-gray-700 text-sm sm:text-base">Cantidad:</label>
+            <div class="flex items-center border border-gray-300 rounded-lg w-fit">
+              <button
+                (click)="decreaseQuantity()"
+                [disabled]="quantity <= 1"
+                class="px-2 sm:px-3 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i class="pi pi-minus text-sm"></i>
+              </button>
+              <input
+                type="number"
+                [(ngModel)]="quantity"
+                [min]="1"
+                [max]="product.stock"
+                class="w-12 sm:w-16 px-1 sm:px-2 py-2 text-center border-0 focus:ring-0 text-sm sm:text-base"
+                (change)="validateQuantity()"
+              />
+              <button
+                (click)="increaseQuantity()"
+                [disabled]="quantity >= product.stock"
+                class="px-2 sm:px-3 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i class="pi pi-plus text-sm"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <button
+              (click)="addToCart()"
+              [disabled]="product.stock === 0 || addingToCart"
+              class="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center text-sm sm:text-base"
+            >
+              <i *ngIf="!addingToCart" class="pi pi-shopping-cart mr-2"></i>
+              <div *ngIf="addingToCart" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              {{ addingToCart ? 'Agregando...' : 'Agregar al carrito' }}
+            </button>
+            <button
+              (click)="toggleWishlist()"
+              class="px-4 sm:px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <i [class]="'pi ' + (inWishlist ? 'pi-heart-fill text-red-500' : 'pi-heart text-gray-600')"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="border-t pt-6 space-y-3 text-sm text-gray-600">
+          <div class="flex items-center">
+            <i class="pi pi-truck mr-2"></i>
+            <span>Envío gratis en compras mayores a $50</span>
+          </div>
+          <div class="flex items-center">
+            <i class="pi pi-shield mr-2"></i>
+            <span>Garantía de 30 días</span>
+          </div>
+          <div class="flex items-center">
+            <i class="pi pi-refresh mr-2"></i>
+            <span>Devoluciones fáciles</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div *ngIf="product.reviews && product.reviews.length > 0" class="border-t border-gray-200 p-6">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">Reseñas de clientes</h3>
+      <div class="space-y-4">
+        <div *ngFor="let review of product.reviews" class="bg-gray-50 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center">
+              <span class="font-medium text-gray-800">{{ review.reviewerName }}</span>
+              <div class="flex ml-2">
+                <i *ngFor="let star of getStars(review.rating)" 
+                   [class]="'text-yellow-400 text-sm ' + (star ? 'pi pi-star-fill' : 'pi pi-star')"></i>
+              </div>
+            </div>
+            <span class="text-sm text-gray-500">{{ formatDate(review.date) }}</span>
+          </div>
+          <p class="text-gray-600">{{ review.comment }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Not Found -->
+  <div *ngIf="!loading && !product" class="text-center py-12">
+    <i class="pi pi-exclamation-triangle text-6xl text-gray-300 mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-600 mb-2">Producto no encontrado</h3>
+    <p class="text-gray-500 mb-4">El producto que buscas no existe o ha sido eliminado</p>
+    <button
+      routerLink="/products"
+      class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+    >
+      Ver todos los productos
+    </button>
+  </div>
+</div>

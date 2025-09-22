@@ -36,7 +36,7 @@ export class ProductsService {
   public loading$ = this.productsState$.pipe(map(state => state.loading));
 
   getProducts(params?: ProductQueryParams): Observable<PaginatedProductsResponse> {
-    console.log('🛍️ Obteniendo productos:', params);
+    console.log('Getting products:', params);
     
     // Actualizar estado de loading
     this.productsState.next({
@@ -46,18 +46,45 @@ export class ProductsService {
     });
 
     let httpParams = new HttpParams();
+    let url = `${this.apiUrl}/products`;
+    
+    // Determinar qué endpoint usar
+    if (params?.search && !params?.category) {
+      // Búsqueda sin categoría - usar endpoint de búsqueda
+      url = `${this.apiUrl}/products/search`;
+      httpParams = httpParams.append('q', params.search);
+    } else if (params?.category) {
+      // Categoría específica - usar endpoint de categoría
+      url = `${this.apiUrl}/products/category/${params.category}`;
+    }
     
     // Configurar parámetros de DummyJSON
     if (params?.limit) httpParams = httpParams.append('limit', params.limit.toString());
     if (params?.skip) httpParams = httpParams.append('skip', params.skip.toString());
 
-    return this.http.get<any>(`${this.apiUrl}/products`, { params: httpParams }).pipe(
+    return this.http.get<any>(url, { params: httpParams }).pipe(
       map((response: any) => {
-        console.log('🛍️ Respuesta de DummyJSON:', response);
+        console.log('DummyJSON response:', response);
         
+        let products = response.products || [];
+        
+        // Aplicar búsqueda si hay término y categoría (filtrado manual)
+        if (params?.search && params?.category) {
+          const searchTerm = params.search.toLowerCase();
+          products = products.filter((product: any) => 
+            product.title.toLowerCase().includes(searchTerm) ||
+            product.description.toLowerCase().includes(searchTerm)
+          );
+        }
+        
+        // Aplicar ordenamiento si está especificado
+        if (params?.sortBy && params?.sortOrder) {
+          products = this.sortProducts(products, params.sortBy, params.sortOrder);
+        }
+
         const mappedResponse: PaginatedProductsResponse = {
-          products: response.products || [],
-          total: response.total || 0,
+          products: products,
+          total: response.total || products.length,
           limit: response.limit || 30,
           skip: response.skip || 0
         };
@@ -65,9 +92,7 @@ export class ProductsService {
         // Actualizar estado
         this.productsState.next({
           ...this.productsState.value,
-          products: params?.skip && params.skip > 0 
-            ? [...this.productsState.value.products, ...mappedResponse.products] 
-            : mappedResponse.products,
+          products: mappedResponse.products,
           loading: false,
           error: null,
           total: mappedResponse.total,
@@ -77,7 +102,7 @@ export class ProductsService {
         return mappedResponse;
       }),
       catchError(error => {
-        console.error('❌ Error fetching products:', error);
+        console.error('Error fetching products:', error);
         this.productsState.next({
           ...this.productsState.value,
           loading: false,
@@ -88,7 +113,7 @@ export class ProductsService {
     );
   }
 
-  getProductById(id: string): Observable<Product> {
+  getProductById(id: number): Observable<Product> {
     this.loadingService.setLoading('product-detail', true);
     
     return this.http.get<Product>(`${this.apiUrl}/products/${id}`).pipe(
@@ -103,8 +128,14 @@ export class ProductsService {
     );
   }
 
-  getCategories(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/products/categories`);
+  getCategories(): Observable<Category[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/products/categories`).pipe(
+      map(categories => categories.map((category, index) => ({
+        id: (index + 1).toString(),
+        slug: category,
+        name: category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ')
+      })))
+    );
   }
 
   searchProducts(query: string, params?: ProductQueryParams): Observable<PaginatedProductsResponse> {
@@ -135,5 +166,23 @@ export class ProductsService {
         throw error;
       })
     );
+  }
+
+  private sortProducts(products: any[], sortBy: string, order: 'asc' | 'desc'): any[] {
+    return products.sort((a, b) => {
+      let aValue = a[sortBy];
+      let bValue = b[sortBy];
+      
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+      
+      if (order === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
   }
 }

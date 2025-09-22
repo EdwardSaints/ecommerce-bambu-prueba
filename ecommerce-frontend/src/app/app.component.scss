@@ -1,0 +1,57 @@
+/* Estilos específicos del componente principal */
+
+/* Header blanco - estilos limpios */
+header {
+  background-color: white !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Asegurar que los textos sean visibles */
+.header-logo {
+  color: #2563eb !important;
+}
+
+.header-subtitle {
+  color: #6b7280 !important;
+}
+
+/* Estilos para elementos del menú desplegable */
+.user-dropdown a,
+.user-dropdown button {
+  text-decoration: none !important;
+  
+  &:hover {
+    text-decoration: none !important;
+  }
+  
+  &:focus {
+    outline: 2px solid rgba(59, 130, 246, 0.5) !important;
+    outline-offset: -2px !important;
+  }
+}
+
+/* Estilos para el menú desplegable */
+.user-dropdown {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Navegación - textos para header blanco */
+.nav-text {
+  color: #374151 !important;
+}
+
+.nav-text-hover:hover {
+  color: #2563eb !important;
+}
+
+.auth-button-login {
+  color: #2563eb !important;
+  
+  &:hover {
+    color: #1d4ed8 !important;
+    background-color: #eff6ff !important;
+  }
+}

@@ -33,26 +33,26 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
-    console.log('🔧 RegisterComponent onSubmit iniciado');
-    console.log('🔧 Form valid:', this.registerForm.valid);
-    console.log('🔧 Form value:', this.registerForm.value);
+    console.log('RegisterComponent onSubmit started');
+    console.log('Form valid:', this.registerForm.valid);
+    console.log('Form value:', this.registerForm.value);
     
     if (this.registerForm.valid) {
       const { email, password, displayName } = this.registerForm.value;
-      console.log('🔧 Datos extraídos:', { email, password, displayName });
+      console.log('Extracted data:', { email, password, displayName });
       
       this.authService.register(email, password, displayName).subscribe({
         next: (user) => {
-          console.log('🔧 Registro exitoso:', user);
+          console.log('Registration successful:', user);
           this.router.navigate(['/']);
         },
         error: (error) => {
-          console.error('🔧 Register error:', error);
+          console.error('Register error:', error);
           // El error ya se maneja en el interceptor y se muestra en las notificaciones
         }
       });
     } else {
-      console.log('🔧 Form inválido, marcando campos como touched');
+      console.log('Form invalid, marking fields as touched');
       this.markFormGroupTouched();
     }
   }

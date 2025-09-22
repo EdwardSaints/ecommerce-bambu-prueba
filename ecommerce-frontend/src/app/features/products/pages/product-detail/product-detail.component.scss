@@ -1,0 +1,112 @@
+// Product detail component styles
+.product-detail {
+  @apply bg-white rounded-lg shadow-lg overflow-hidden;
+}
+
+.product-images {
+  .main-image {
+    @apply w-full h-96 object-cover rounded-lg;
+  }
+  
+  .thumbnail-grid {
+    @apply flex space-x-2 overflow-x-auto;
+    
+    .thumbnail {
+      @apply w-20 h-20 object-cover rounded-lg cursor-pointer border-2 transition-colors;
+      
+      &.selected {
+        @apply border-blue-500;
+      }
+      
+      &:not(.selected) {
+        @apply border-gray-200 hover:border-gray-300;
+      }
+    }
+  }
+}
+
+.product-info {
+  .price-section {
+    @apply space-y-2;
+    
+    .current-price {
+      @apply text-4xl font-bold text-green-600;
+    }
+    
+    .original-price {
+      @apply text-xl text-gray-500 line-through;
+    }
+    
+    .savings {
+      @apply text-sm text-green-600 font-medium;
+    }
+  }
+  
+  .quantity-controls {
+    @apply flex items-center border border-gray-300 rounded-lg;
+    
+    button {
+      @apply px-3 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    
+    input {
+      @apply w-16 px-2 py-2 text-center border-0 focus:ring-0;
+    }
+  }
+  
+  .action-buttons {
+    @apply flex space-x-4;
+    
+    .add-to-cart {
+      @apply flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center;
+    }
+    
+    .wishlist-btn {
+      @apply px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors;
+    }
+  }
+}
+
+.star-rating {
+  .star {
+    @apply text-yellow-400;
+    
+    &.empty {
+      @apply text-gray-300;
+    }
+  }
+}
+
+.reviews-section {
+  .review-item {
+    @apply bg-gray-50 rounded-lg p-4;
+    
+    .review-header {
+      @apply flex items-center justify-between mb-2;
+    }
+    
+    .reviewer-name {
+      @apply font-medium text-gray-800;
+    }
+    
+    .review-date {
+      @apply text-sm text-gray-500;
+    }
+    
+    .review-comment {
+      @apply text-gray-600;
+    }
+  }
+}
+
+.breadcrumb {
+  @apply flex items-center space-x-2 text-sm;
+  
+  a {
+    @apply text-blue-500 hover:text-blue-600;
+  }
+  
+  .separator {
+    @apply text-gray-400 text-xs;
+  }
+}

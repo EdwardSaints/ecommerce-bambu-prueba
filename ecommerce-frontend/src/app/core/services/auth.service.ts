@@ -58,7 +58,7 @@ export class AuthService {
               });
             },
             error: (error) => {
-              console.error('Error al obtener perfil de usuario:', error);
+              // Error handling for user profile fetch
               // Si no se puede obtener el perfil, usar solo datos de Firebase
               const appUser: User = {
                 uid: firebaseUser.uid,
@@ -86,7 +86,7 @@ export class AuthService {
         }
       },
       error: (error) => {
-        console.error('Error en autenticación:', error);
+        // Authentication error handling
         this.authState.next({
           user: null,
           loading: false,
@@ -111,7 +111,7 @@ export class AuthService {
       const userRef = doc(this.firestore, `users/${uid}`);
       await setDoc(userRef, userData, { merge: true });
     } catch (error) {
-      console.error('Error al guardar perfil de usuario:', error);
+      // Error handling for profile save
       throw error;
     }
   }
@@ -126,7 +126,7 @@ export class AuthService {
         return null;
       }),
       catchError(error => {
-        console.error('Error al obtener perfil de Firestore:', error);
+        // Error handling for Firestore profile fetch
         return of(null);
       })
     );
@@ -280,7 +280,7 @@ export class AuthService {
         break;
     }
     this.notificationService.showError('Error de Autenticación', errorMessage);
-    console.error('Firebase Auth Error:', error);
+    // Firebase authentication error
   }
 
   // ========== MÉTODOS MOCK PARA DESARROLLO ==========
@@ -288,12 +288,12 @@ export class AuthService {
   private mockUsers = new Map<string, { email: string; password: string; displayName: string; uid: string }>();
 
   public mockRegister(email: string, password: string, displayName: string): Observable<User> {
-    console.log('🔧 Mock Register iniciado:', { email, displayName });
+    // Mock register initiated
     
     return of(null).pipe(
       delay(1000), // Simular latencia de red
       switchMap(() => {
-        console.log('🔧 Procesando registro mock...');
+        // Processing mock registration
         
         // Cargar usuarios existentes desde localStorage
         const savedUsers = localStorage.getItem('mockUsers');
@@ -302,13 +302,13 @@ export class AuthService {
             const usersArray = JSON.parse(savedUsers);
             this.mockUsers = new Map(usersArray);
           } catch (error) {
-            console.error('Error al cargar usuarios mock:', error);
+            // Error loading mock users
           }
         }
         
         // Verificar si el usuario ya existe
         if (this.mockUsers.has(email)) {
-          console.log('🔧 Usuario ya existe:', email);
+          // User already exists
           const error = { code: 'auth/email-already-in-use', message: 'El correo electrónico ya está registrado.' };
           this.handleAuthError(error);
           return throwError(() => error);
@@ -328,7 +328,7 @@ export class AuthService {
           lastName: displayName.split(' ').slice(1).join(' ') || ''
         };
 
-        console.log('🔧 Usuario mock creado:', appUser);
+        // Mock user created
 
         // Guardar en localStorage para persistencia
         localStorage.setItem('mockUser', JSON.stringify(appUser));
@@ -340,12 +340,12 @@ export class AuthService {
           error: null
         });
 
-        console.log('🔧 Estado actualizado, mostrando notificación...');
+        // State updated, showing notification
         this.notificationService.showSuccess('Registro exitoso', `¡Bienvenido, ${displayName}! (Modo desarrollo)`);
         return of(appUser);
       }),
       catchError(error => {
-        console.error('🔧 Error en mockRegister:', error);
+        // Error in mock register
         this.authState.next({
           user: null,
           loading: false,
@@ -425,9 +425,9 @@ export class AuthService {
           loading: false,
           error: null
         });
-        console.log('🔧 Usuario mock cargado:', user);
+        // Mock user loaded
       } catch (error) {
-        console.error('Error al cargar usuario mock:', error);
+        // Error loading mock user
         localStorage.removeItem('mockUser');
         // Establecer estado inicial sin usuario
         this.authState.next({
@@ -438,7 +438,7 @@ export class AuthService {
       }
     } else {
       // No hay usuario guardado, establecer estado inicial
-      console.log('🔧 No hay usuario mock guardado, estableciendo estado inicial');
+      // No mock user saved, setting initial state
       this.authState.next({
         user: null,
         loading: false,
