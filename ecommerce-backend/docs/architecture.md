@@ -1,6 +1,6 @@
-# 🏗️ Arquitectura Técnica Detallada
+# Arquitectura Técnica Detallada
 
-## 📋 Índice
+## Índice
 
 1. [Visión General](#visión-general)
 2. [Arquitectura de Capas](#arquitectura-de-capas)
@@ -11,23 +11,23 @@
 7. [Performance y Escalabilidad](#performance-y-escalabilidad)
 8. [Monitoreo y Observabilidad](#monitoreo-y-observabilidad)
 
-## 🎯 Visión General
+## Visión General
 
 Este proyecto implementa una **API RESTful para eCommerce** siguiendo principios de **Clean Architecture**, **SOLID**, y **Domain-Driven Design (DDD)**. La arquitectura está diseñada para ser:
 
-- ✅ **Escalable**: Soporta crecimiento horizontal y vertical
-- ✅ **Mantenible**: Código limpio y bien estructurado
-- ✅ **Testeable**: Cada componente es testeable de forma aislada
-- ✅ **Segura**: Múltiples capas de seguridad implementadas
-- ✅ **Observable**: Logging y métricas completas
+- **Escalable**: Soporta crecimiento horizontal y vertical
+- **Mantenible**: Código limpio y bien estructurado
+- **Testeable**: Cada componente es testeable de forma aislada
+- **Segura**: Múltiples capas de seguridad implementadas
+- **Observable**: Logging y métricas completas
 
-## 🏛️ Arquitectura de Capas
+## Arquitectura de Capas
 
 ### Diagrama de Arquitectura
 
 ```mermaid
 graph TB
-    subgraph "🌐 Presentation Layer"
+    subgraph "Presentation Layer"
         A[Controllers] --> B[DTOs]
         A --> C[Swagger Docs]
     end

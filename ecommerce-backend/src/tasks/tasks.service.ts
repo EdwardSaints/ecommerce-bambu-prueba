@@ -34,7 +34,7 @@ export class TasksService {
     const startTime = new Date();
 
     try {
-      this.logger.log('🔄 Iniciando sincronización automática de productos...');
+      this.logger.log('Iniciando sincronización automática de productos...');
       this.loggerService.log(
         'Iniciando sincronización automática de productos',
         'TasksService',
@@ -58,7 +58,7 @@ export class TasksService {
       });
 
       this.logger.log(
-        `✅ Sincronización completada: ${result.synchronized} productos sincronizados, ${result.errors} errores en ${duration}ms`
+        `Sincronización completada: ${result.synchronized} productos sincronizados, ${result.errors} errores en ${duration}ms`
       );
 
       this.loggerService.log(
@@ -88,7 +88,7 @@ export class TasksService {
         errorMessage: error.message,
       });
 
-      this.logger.error(`❌ Error en sincronización automática: ${error.message}`);
+      this.logger.error(`Error en sincronización automática: ${error.message}`);
       this.loggerService.error(
         'Error en sincronización automática de productos',
         error.stack,
@@ -113,7 +113,7 @@ export class TasksService {
   })
   async handleLogCleanup() {
     try {
-      this.logger.log('🧹 Iniciando limpieza de logs antiguos...');
+      this.logger.log('Iniciando limpieza de logs antiguos...');
 
       // Eliminar logs de más de 30 días
       const thirtyDaysAgo = new Date();
@@ -127,7 +127,7 @@ export class TasksService {
         },
       });
 
-      this.logger.log(`✅ Limpieza completada: ${deletedCount.count} logs eliminados`);
+      this.logger.log(`Limpieza completada: ${deletedCount.count} logs eliminados`);
       this.loggerService.log(
         'Limpieza de logs completada',
         'TasksService',
@@ -135,7 +135,7 @@ export class TasksService {
       );
 
     } catch (error) {
-      this.logger.error(`❌ Error en limpieza de logs: ${error.message}`);
+      this.logger.error(`Error en limpieza de logs: ${error.message}`);
       this.loggerService.error(
         'Error en limpieza de logs',
         error.stack,
@@ -152,7 +152,7 @@ export class TasksService {
     }
 
     try {
-      this.logger.log('🔄 Ejecutando sincronización manual...');
+      this.logger.log('Ejecutando sincronización manual...');
       const result = await this.productsService.syncProductsFromDummyJSON();
       
       return {
@@ -163,7 +163,7 @@ export class TasksService {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Error en sincronización manual: ${error.message}`);
+      this.logger.error(`Error en sincronización manual: ${error.message}`);
       throw error;
     }
   }

@@ -44,29 +44,29 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('eCommerce API')
     .setDescription(`
-      ## 🛒 API RESTful Completa para eCommerce
+      ## API RESTful Completa para eCommerce
       
       Esta API proporciona todas las funcionalidades necesarias para un eCommerce moderno:
       
-      ### 🚀 Características principales:
-      - ✅ **Autenticación JWT** con roles de usuario
-      - ✅ **Gestión de productos** con sincronización automática
-      - ✅ **Carrito de compras** con validación de stock
-      - ✅ **Categorías dinámicas** desde API externa
-      - ✅ **Cron Jobs** para sincronización automática
-      - ✅ **Rate Limiting** y seguridad avanzada
-      - ✅ **Logging centralizado** de operaciones
+      ### Características principales:
+      - **Autenticación JWT** con roles de usuario
+      - **Gestión de productos** con sincronización automática
+      - **Carrito de compras** con validación de stock
+      - **Categorías dinámicas** desde API externa
+      - **Cron Jobs** para sincronización automática
+      - **Rate Limiting** y seguridad avanzada
+      - **Logging centralizado** de operaciones
       
-      ### 🔐 Autenticación:
+      ### Autenticación:
       1. Registra un usuario con \`POST /auth/register\`
       2. Inicia sesión con \`POST /auth/login\`
       3. Usa el token JWT en el header: \`Authorization: Bearer <token>\`
       
-      ### 📊 Datos de prueba:
+      ### Datos de prueba:
       - La API sincroniza productos automáticamente desde [DummyJSON](https://dummyjson.com)
       - Puedes forzar la sincronización con \`POST /products/sync\` (requiere admin)
       
-      ### 🛠️ Tecnologías:
+      ### Tecnologías:
       - **Backend**: Node.js + TypeScript + NestJS
       - **Base de datos**: PostgreSQL + Prisma ORM
       - **Autenticación**: JWT + Passport
@@ -137,11 +137,11 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`
-🚀 Aplicación iniciada exitosamente!
-📱 API: http://localhost:${port}
-📚 Swagger UI: http://localhost:${port}/api
-📄 OpenAPI JSON: http://localhost:${port}/api-json
-🔍 Health Check: http://localhost:${port}
+ Aplicación iniciada exitosamente!
+API: http://localhost:${port}
+Swagger UI: http://localhost:${port}/api
+OpeAPI JSON: http://localhost:${port}/api-json
+Health Check: http://localhost:${port}
   `);
 }
 
